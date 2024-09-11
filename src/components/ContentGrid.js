@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import axios from "axios";
+import { CircularProgress } from "@mui/material";
 
 const ContentGrid = ({ searchQuery }) => {
-  const [content, setContent] = useState([]); 
-  const [filteredContent, setFilteredContent] = useState([]); 
+  const [content, setContent] = useState([]);
+  const [filteredContent, setFilteredContent] = useState([]);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
+  const [hasMore, setHasMore] = useState(true);
   useEffect(() => {
     fetchContent();
   }, []);
@@ -20,6 +22,8 @@ const ContentGrid = ({ searchQuery }) => {
   }, [searchQuery, content]);
 
   const fetchContent = async () => {
+    setIsLoading(true);
+
     try {
       const response = await axios.get(
         `https://test.create.diagnal.com/data/page${page}.json`
@@ -40,6 +44,7 @@ const ContentGrid = ({ searchQuery }) => {
     } catch (error) {
       console.error("Error fetching data:", error);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -47,7 +52,6 @@ const ContentGrid = ({ searchQuery }) => {
       dataLength={filteredContent.length}
       next={fetchContent}
       hasMore={hasMore}
-      loader={<h4>Loading...</h4>}
       endMessage={
         <p style={{ textAlign: "center" }}>No more content to load.</p>
       }
@@ -59,10 +63,15 @@ const ContentGrid = ({ searchQuery }) => {
               src={`https://test.create.diagnal.com/images/${item["poster-image"]}`}
               alt={item.name}
             />
-            <p>{item.name}</p>
+            <p className="grid-item p">{item.name}</p>
           </div>
         ))}
       </div>
+      {filteredContent.length === 0 && (
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <CircularProgress color="inherit" />
+        </div>
+      )}
     </InfiniteScroll>
   );
 };
